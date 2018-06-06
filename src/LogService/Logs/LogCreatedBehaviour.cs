@@ -26,7 +26,7 @@ namespace LogService
                 await _hubContext.Clients.All.SendAsync("message", new
                 {
                     Type = "[Log] Created",
-                    Payload = new { note = LogApiModel.FromLog((await _context.Logs.FindAsync((response as CreateLogCommand.Response).LogId))) }
+                    Payload = new { log = LogApiModel.FromLog((await _context.Logs.FindAsync((response as CreateLogCommand.Response).LogId))) }
                 });
             }
 

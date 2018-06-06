@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Linq;
@@ -64,6 +65,17 @@ namespace LogService
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()));
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new SignalRContractResolver()
+            };
+
+            var serializer = JsonSerializer.Create(settings);
+
+            services.Add(new ServiceDescriptor(typeof(JsonSerializer),
+                                               provider => serializer,
+                                               ServiceLifetime.Transient));
+            services.AddSignalR();
             services.AddMvc();
             services.AddScoped<IAppDbContext, AppDbContext>();
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -92,6 +104,7 @@ namespace LogService
         {
             app.UseCors("CorsPolicy");
             app.UseMvc();
+            app.UseSignalR(routes => routes.MapHub<AppHub>("/hub"));
             app.UseSwagger();
             app.UseSwaggerUI(options
                 => options.SwaggerEndpoint("/swagger/v1/swagger.json", "Commitments API"));
