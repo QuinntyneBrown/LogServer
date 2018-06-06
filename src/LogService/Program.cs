@@ -65,12 +65,11 @@ namespace LogService
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()));
-            var settings = new JsonSerializerSettings
+            
+            var serializer = JsonSerializer.Create(new JsonSerializerSettings
             {
                 ContractResolver = new SignalRContractResolver()
-            };
-
-            var serializer = JsonSerializer.Create(settings);
+            });
 
             services.Add(new ServiceDescriptor(typeof(JsonSerializer),
                                                provider => serializer,
