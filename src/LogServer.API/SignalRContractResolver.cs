@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Serialization;
 
-namespace LogService
+namespace LogServer.API
 {
     public class SignalRContractResolver : IContractResolver
     {

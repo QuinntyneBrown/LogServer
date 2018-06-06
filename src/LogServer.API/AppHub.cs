@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 
-namespace LogService
+namespace LogServer.API
 {
     public class AppHub: Hub
     {

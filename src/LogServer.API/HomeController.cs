@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace LogService
+namespace LogServer.API
 {
     [Route("")]
     [ApiExplorerSettings(IgnoreApi = true)]

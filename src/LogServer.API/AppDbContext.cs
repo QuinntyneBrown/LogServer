@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LogService
+namespace LogServer.API
 {
     public interface IAppDbContext
     {
@@ -29,14 +29,10 @@ namespace LogService
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
-
-            var builder = new DbContextOptionsBuilder<AppDbContext>();
-
-            var connectionString = configuration["Data:DefaultConnection:ConnectionString"];
-
-            builder.UseSqlServer(connectionString);
-
-            return new AppDbContext(builder.Options);
+            
+            return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"])
+                .Options);
         }
     }
 }

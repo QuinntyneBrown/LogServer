@@ -10,7 +10,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Linq;
 
-namespace LogService
+namespace LogServer.API
 {
     public class Program
     {
@@ -78,14 +78,15 @@ namespace LogService
             services.AddMvc();
             services.AddScoped<IAppDbContext, AppDbContext>();
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LogCreatedChangedBehavior<,>));
             services.AddSwaggerGen(options =>
             {
                 options.DescribeAllEnumsAsStrings();
                 options.SwaggerDoc("v1", new Info
                 {
-                    Title = "LogService",
+                    Title = "LogServer.API",
                     Version = "v1",
-                    Description = "LogService REST API",
+                    Description = "LogServer.API REST API",
                 });
                 options.CustomSchemaIds(x => x.FullName);
             });
@@ -106,7 +107,7 @@ namespace LogService
             app.UseSignalR(routes => routes.MapHub<AppHub>("/hub"));
             app.UseSwagger();
             app.UseSwaggerUI(options
-                => options.SwaggerEndpoint("/swagger/v1/swagger.json", "Commitments API"));
+                => options.SwaggerEndpoint("/swagger/v1/swagger.json", "LogServer API"));
         }
     }
 }

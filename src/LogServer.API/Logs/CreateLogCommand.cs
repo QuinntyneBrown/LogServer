@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LogService
+namespace LogServer.API
 {
     public class CreateLogCommand
     {
@@ -13,11 +13,12 @@ namespace LogService
             {
                 RuleFor(request => request.LogLevel).NotNull();
                 RuleFor(request => request.Message).NotEmpty().NotNull();
+                RuleFor(request => request.ClientId).NotEqual(default(Guid));
             }
         }
 
         public class Request : IRequest<Response> {
-            public int LogLevel { get; set; }
+            public string LogLevel { get; set; }
             public string Message { get; set; }
             public Guid ClientId { get; set; }
         }

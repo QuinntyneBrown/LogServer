@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace LogService
+namespace LogServer.API
 {
     [ApiController]
     [Route("api/logs")]
