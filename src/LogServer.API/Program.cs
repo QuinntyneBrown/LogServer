@@ -17,9 +17,7 @@ namespace LogServer.API
         public static void Main(string[] args)
         {
             var host = CreateWebHostBuilder().Build();
-
             ProcessDbCommands(args, host);
-
             host.Run();
         }
 

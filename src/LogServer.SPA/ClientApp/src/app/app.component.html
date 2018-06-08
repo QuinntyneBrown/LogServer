@@ -1,0 +1,18 @@
+<mat-toolbar color="primary" class="mat-elevation-z6">
+  <section class="mat-typography">
+    <h1>Log Server</h1>
+  </section>
+</mat-toolbar>
+
+<section>
+  <igx-grid [data]="messages$ | async"
+            [autoGenerate]="false"
+            height="100%"
+            width="100%"
+            [paging]="true"
+            [perPage]="10">
+    <igx-column [field]="'logId'" [header]="'Id'" width="100px"></igx-column>
+    <igx-column [field]="'logLevel'" [header]="'Log Level'" width="150px"></igx-column>
+    <igx-column [field]="'message'" [header]="'Message'" filterable="true"></igx-column>
+  </igx-grid>
+</section>
