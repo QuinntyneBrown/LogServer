@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogServer.API", "src\LogServer.API\LogServer.API.csproj", "{34A04BD5-690F-4B3F-8ACE-594D5D4965E7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogServer.SPA", "src\LogServer.SPA\LogServer.SPA.csproj", "{3BE8AE04-5D5A-42AF-824A-9F6104240ED1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogServer.SPA", "src\LogServer.SPA\LogServer.SPA.csproj", "{43C2C626-9D18-4CAA-9D5F-09BFF70FA727}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{34A04BD5-690F-4B3F-8ACE-594D5D4965E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34A04BD5-690F-4B3F-8ACE-594D5D4965E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34A04BD5-690F-4B3F-8ACE-594D5D4965E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3BE8AE04-5D5A-42AF-824A-9F6104240ED1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3BE8AE04-5D5A-42AF-824A-9F6104240ED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3BE8AE04-5D5A-42AF-824A-9F6104240ED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3BE8AE04-5D5A-42AF-824A-9F6104240ED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43C2C626-9D18-4CAA-9D5F-09BFF70FA727}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43C2C626-9D18-4CAA-9D5F-09BFF70FA727}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43C2C626-9D18-4CAA-9D5F-09BFF70FA727}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43C2C626-9D18-4CAA-9D5F-09BFF70FA727}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

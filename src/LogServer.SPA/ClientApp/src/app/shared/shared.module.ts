@@ -7,7 +7,7 @@ import {
   IgxGridModule
 } from 'igniteui-angular/main';
 
-import {  
+import {
   MatAutocompleteModule,
   MatButtonModule,
   MatButtonToggleModule,
@@ -56,7 +56,7 @@ const providers = [
 
 @NgModule({
   declarations: declarations,
-  imports: [
+  imports: [    
     IgxGridModule,
 
     CommonModule,

@@ -24,7 +24,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ClientApp\src\app\logs\" />
+    <None Remove="ClientApp\src\app\core\core.module.ts" />
+    <None Remove="ClientApp\src\app\core\hub-client.ts" />
+    <None Remove="ClientApp\src\app\logs\log.model.ts" />
+    <None Remove="ClientApp\src\app\logs\log.service.ts" />
+    <None Remove="ClientApp\src\app\logs\logs.module.ts" />
+    <None Remove="ClientApp\src\app\shared\shared.module.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\app\core\core.module.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\core\hub-client.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\logs\log.model.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\logs\log.service.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\logs\logs.module.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\shared\shared.module.ts" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

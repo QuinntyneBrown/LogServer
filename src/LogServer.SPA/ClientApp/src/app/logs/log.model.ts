@@ -1,4 +1,5 @@
 export class Log {
   public logId: number;
-  public name: string;
+  public message: string;
+  public logLevel: string;
 }

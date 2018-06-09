@@ -19,7 +19,7 @@ const providers = [
     FormsModule,
     HttpClientModule,
     ReactiveFormsModule,
-    RouterModule	
+    RouterModule
   ],
   providers,
 })
