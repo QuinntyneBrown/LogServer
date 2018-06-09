@@ -6,9 +6,7 @@ import { Subject } from "rxjs";
 export class HubClient {
   public events: Subject<any> = new Subject();
 
-  constructor(
-    private _ngZone: NgZone) {
-  }
+  constructor(private _ngZone: NgZone) { }
 
   private _connection: HubConnection;
 
