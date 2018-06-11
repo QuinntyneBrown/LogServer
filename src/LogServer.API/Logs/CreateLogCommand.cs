@@ -43,7 +43,7 @@ namespace LogServer.API.Logs
                     ClientId = request.ClientId
                 };
 
-                log.RaiseDomainEvent(new LogCreatedEvent(log));
+                log.RaiseDomainEvent(new LogCreatedEvent.Notification(log));
 
                 _context.Logs.Add(log);
                 await _context.SaveChangesAsync(cancellationToken);
