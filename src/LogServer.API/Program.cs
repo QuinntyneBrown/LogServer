@@ -76,7 +76,6 @@ namespace LogServer.API
             services.AddMvc();
             services.AddScoped<IAppDbContext, AppDbContext>();
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LogCreatedChangedBehavior<,>));
             services.AddSwaggerGen(options =>
             {
                 options.DescribeAllEnumsAsStrings();

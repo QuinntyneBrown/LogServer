@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LogServer.API
+namespace LogServer.API.Logs
 {
     public class CreateLogCommand
     {
@@ -42,6 +42,8 @@ namespace LogServer.API
                     Message = request.Message,
                     ClientId = request.ClientId
                 };
+
+                log.RaiseDomainEvent(new LogCreatedEvent(log));
                 _context.Logs.Add(log);
                 await _context.SaveChangesAsync(cancellationToken);
                 return new Response() { LogId = log.LogId };

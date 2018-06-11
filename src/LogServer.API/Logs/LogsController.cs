@@ -1,3 +1,4 @@
+using LogServer.API.Logs;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
