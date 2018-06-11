@@ -10,9 +10,7 @@ namespace LogServer.API.Logs
         public class Notification : INotification
         {
             public Notification(Log log)
-            {
-                Payload = new { log = LogApiModel.FromLog(log) };
-            }
+                => Payload = new { log = LogApiModel.FromLog(log) };
 
             public string Type { get; set; } = "[Log] Created";
             public dynamic Payload { get; set; }
