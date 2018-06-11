@@ -28,7 +28,7 @@ namespace LogServer.API
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             int result = default(int);
-            var domainEventEntities = ChangeTracker.Entries<Log>()
+            var domainEventEntities = ChangeTracker.Entries<IEntity>()
                 .Select(po => po.Entity)
                 .Where(po => po.DomainEvents.Any())
                 .ToArray();

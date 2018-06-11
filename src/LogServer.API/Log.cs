@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LogServer.API
 {
-    public class Log
+    public class Log: IEntity
     {
         public Log()
         {

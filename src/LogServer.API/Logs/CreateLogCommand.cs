@@ -44,6 +44,7 @@ namespace LogServer.API.Logs
                 };
 
                 log.RaiseDomainEvent(new LogCreatedEvent(log));
+
                 _context.Logs.Add(log);
                 await _context.SaveChangesAsync(cancellationToken);
                 return new Response() { LogId = log.LogId };
