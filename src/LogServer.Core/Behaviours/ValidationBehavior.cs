@@ -1,11 +1,11 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LogServer.API
+namespace LogServer.Core.Behaviours
 {
     public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
@@ -24,8 +24,11 @@ namespace LogServer.API
                 .Where(f => f != null)
                 .ToList();
 
-            if (failures.Count != 0)
-                throw new ValidationException(failures);
+            if (failures.Any())
+            {
+                throw new ValidationException($"ValidationException: Command Validation Errors for type {typeof(TRequest).Name}",
+                    failures);
+            }
 
             return next();
         }

@@ -18,7 +18,6 @@ export class AppComponent {
     this._hubClient.connect();
 
     this._hubClient.events
-      .pipe(map(x => x.payload.log))
       .subscribe(x => {
         this.messages$.next([x,...this.messages$.value]);
       });

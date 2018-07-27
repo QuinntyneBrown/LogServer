@@ -1,7 +1,6 @@
-using LogServer.API.Logs;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
+using System;
 using System.Threading.Tasks;
 
 namespace LogServer.API
@@ -17,7 +16,7 @@ namespace LogServer.API
         [HttpPost]
         public async Task<ActionResult<CreateLogCommand.Response>> Create(CreateLogCommand.Request request)
             => await _mediator.Send(request);
-        
+
         [HttpGet("{logId}")]
         public async Task<ActionResult<GetLogByIdQuery.Response>> GetById([FromRoute]GetLogByIdQuery.Request request)
             => await _mediator.Send(request);
@@ -25,5 +24,6 @@ namespace LogServer.API
         [HttpGet]
         public async Task<ActionResult<GetLogsQuery.Response>> Get()
             => await _mediator.Send(new GetLogsQuery.Request());
+        
     }
 }

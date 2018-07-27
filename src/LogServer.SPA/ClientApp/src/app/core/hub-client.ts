@@ -22,7 +22,7 @@ export class HubClient {
     this._connect = new Promise((resolve) => {
       
       this._connection = this._connection || new HubConnectionBuilder()
-        .withUrl(`http://localhost:47270/hub`)
+        .withUrl(`http://localhost:45121/hub`)
         .build();
 
       this._connection.on("message", (value) => {

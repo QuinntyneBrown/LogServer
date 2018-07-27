@@ -11,7 +11,7 @@ export class LogService {
   ) { }
 
   public get(): Observable<Array<Log>> {
-    return this._client.get<{ logs: Array<Log> }>(`http://localhost:47270/api/logs`)
+    return this._client.get<{ logs: Array<Log> }>(`http://localhost:45121/api/logs`)
       .pipe(map(x => x.logs));
   }
 }

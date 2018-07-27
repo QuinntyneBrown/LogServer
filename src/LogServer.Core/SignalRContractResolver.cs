@@ -1,9 +1,9 @@
-﻿using System;
-using System.Reflection;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Serialization;
+using System;
+using System.Reflection;
 
-namespace LogServer.API
+namespace LogServer.Core
 {
     public class SignalRContractResolver : IContractResolver
     {
@@ -25,6 +25,5 @@ namespace LogServer.API
 
             return _camelCaseContractResolver.ResolveContract(type);
         }
-
     }
 }
