@@ -9,11 +9,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using static LogServer.Infrastructure.Data.DeserializedEventStore;
+using System.Threading.Tasks;
+using static LogServer.Infrastructure.DeserializedEventStore;
 using static Newtonsoft.Json.JsonConvert;
 
 
-namespace LogServer.Infrastructure.Data
+namespace LogServer.Infrastructure
 {
     public static class DeserializedEventStore {
         public static ConcurrentDictionary<Guid,DeserializedStoredEvent> Events { get; set; }
@@ -44,15 +45,15 @@ namespace LogServer.Infrastructure.Data
 
     public class EventStore : IEventStore
     {
-        private readonly IAppDbContext _context;
         private readonly IMediator _mediator;
+        private readonly IBackgroundTaskQueue _queue;
 
-        public EventStore(IAppDbContext context, IMediator mediator = default(IMediator)) {
-            _context = context;
+        public EventStore(IMediator mediator = default(IMediator), IBackgroundTaskQueue queue = default(IBackgroundTaskQueue)) {
             _mediator = mediator;
+            _queue = queue;
         }
-        
-        public void Dispose() => _context.Dispose();
+
+        public void Dispose() { }
 
         public void Save(AggregateRoot aggregateRoot)
         {
@@ -146,18 +147,18 @@ namespace LogServer.Infrastructure.Data
 
             Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
             Persist(@event);
-            
         }
 
-        public ICollection<StoredEvent> GetStoredEvents() {
-            return DeserializeObject<ICollection<StoredEvent>>(string.Join(" ", File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));            
-        }
+        public ICollection<StoredEvent> GetStoredEvents() 
+            => DeserializeObject<ICollection<StoredEvent>>(string.Join(" ", File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));
 
         public void Persist(StoredEvent @event)
-        {
-            var storedEvents = GetStoredEvents();
-            storedEvents.Add(@event);
-            File.WriteAllLines($@"{Environment.CurrentDirectory}\storedEvents.json", new string[1] { SerializeObject(storedEvents) });
-        }
+            => _queue.QueueBackgroundWorkItem(async token =>
+            {
+                var storedEvents = GetStoredEvents();
+                storedEvents.Add(@event);
+                File.WriteAllLines($@"{Environment.CurrentDirectory}\storedEvents.json", new string[1] { SerializeObject(storedEvents) });
+                await Task.CompletedTask;
+            });
     }
 }

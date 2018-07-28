@@ -1,5 +1,5 @@
 using LogServer.API;
-using LogServer.Infrastructure.Data;
+using LogServer.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -37,9 +37,7 @@ namespace IntegrationTests
 
             using (var scope = services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                AppInitializer.Seed(context);
+                AppInitializer.Seed();
             }
 
             return testServer;

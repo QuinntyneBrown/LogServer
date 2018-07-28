@@ -16,7 +16,11 @@ namespace LogServer.Core.Models
 
         protected override void EnsureValidState()
         {
-            
+            if (string.IsNullOrEmpty(Message))
+                throw new Exception("Invalid Aggregate");
+
+            if (default(Guid) == ClientId)
+                throw new Exception("Invalid Aggregate");
         }
 
         protected override void When(DomainEvent @event)

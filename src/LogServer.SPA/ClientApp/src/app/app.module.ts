@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './shared/shared.module';
 import { CoreModule } from './core/core.module';
 import { LogsModule } from './logs/logs.module';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -14,6 +15,7 @@ import { LogsModule } from './logs/logs.module';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    FormsModule,
 
     CoreModule,
     LogsModule,

@@ -4,8 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import {
-  IgxGridModule
-} from 'igniteui-angular/main';
+  IgxGridModule, IgxButtonModule, IgxIconModule, IgxInputGroupModule, IgxRippleModule
+} from 'igniteui-angular';
 
 import {  
   MatAutocompleteModule,
@@ -58,6 +58,10 @@ const providers = [
   declarations: declarations,
   imports: [
     IgxGridModule,
+    IgxButtonModule,
+    IgxIconModule,
+    IgxInputGroupModule,
+    IgxRippleModule,
 
     CommonModule,
     CdkTableModule,
@@ -100,6 +104,10 @@ const providers = [
   ],
   exports: [
     IgxGridModule,
+    IgxButtonModule,
+    IgxIconModule,
+    IgxInputGroupModule,
+    IgxRippleModule,
 
     CdkTableModule,
 

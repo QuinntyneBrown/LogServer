@@ -1,8 +1,5 @@
-using LogServer.Infrastructure.Data;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 
@@ -25,30 +22,14 @@ namespace LogServer.API
 
         private static void ProcessDbCommands(string[] args, IWebHost host)
         {
-            var services = (IServiceScopeFactory)host.Services.GetService(typeof(IServiceScopeFactory));
+            if (args.Contains("ci"))
+                args = new string[4] { "dropdb", "migratedb", "seeddb", "stop" };
 
-            using (var scope = services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            if (args.Contains("seeddb"))
+                AppInitializer.Seed();
 
-                if (args.Contains("ci"))
-                    args = new string[4] { "dropdb", "migratedb", "seeddb", "stop" };
-
-                if (args.Contains("dropdb"))
-                    context.Database.EnsureDeleted();
-
-                if (args.Contains("migratedb"))
-                    context.Database.Migrate();
-
-                if (args.Contains("seeddb"))
-                {
-                    context.Database.EnsureCreated();
-                    AppInitializer.Seed(context);            
-                }
-                
-                if (args.Contains("stop"))
-                    Environment.Exit(0);
-            }
+            if (args.Contains("stop"))
+                Environment.Exit(0);
         }        
     }
 }

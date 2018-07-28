@@ -3,8 +3,7 @@ using LogServer.Core;
 using LogServer.Core.Behaviours;
 using LogServer.Core.Extensions;
 using LogServer.Core.Interfaces;
-using LogServer.Infrastructure.Data;
-using LogServer.Infrastructure.Extensions;
+using LogServer.Infrastructure;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +22,8 @@ namespace LogServer.API
         {
             services.AddTransient<IEventStore, EventStore>();
             services.AddHttpContextAccessor();
+            services.AddHostedService<QueuedHostedService>();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
             services.AddCustomMvc()
                 .AddFluentValidation(cfg => { cfg.RegisterValidatorsFromAssemblyContaining<Startup>(); });
@@ -31,7 +32,6 @@ namespace LogServer.API
                 .AddCustomSecurity(Configuration)
                 .AddCustomSignalR()
                 .AddCustomSwagger()
-                .AddDataStore(Configuration["Data:DefaultConnection:ConnectionString"],Configuration.GetValue<bool>("isTest"))
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>))
                 .AddMediatR(typeof(Startup).Assembly);
         }

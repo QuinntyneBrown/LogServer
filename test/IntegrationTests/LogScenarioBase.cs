@@ -1,3 +1,5 @@
+using System;
+
 namespace IntegrationTests
 {
     public class LogScenarioBase: ScenarioBase
@@ -6,7 +8,7 @@ namespace IntegrationTests
         {
             public static string Logs = "api/logs";
 
-            public static string LogById(int id)
+            public static string LogById(Guid id)
             {
                 return $"api/logs/{id}";
             }
@@ -15,14 +17,6 @@ namespace IntegrationTests
         public static class Post
         {
             public static string Logs = "api/logs";
-        }
-
-        public static class Delete
-        {
-            public static string Log(int id)
-            {
-                return $"api/logs/{id}";
-            }
         }
     }
 }

@@ -5,19 +5,17 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C92239B9-5E04-4CD9-B02D-F70EB42949F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogServer.Core", "src\LogServer.Core\LogServer.Core.csproj", "{C1EEEF9B-5A3A-45E6-8C3A-31C55B358113}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogServer.Core", "src\LogServer.Core\LogServer.Core.csproj", "{C1EEEF9B-5A3A-45E6-8C3A-31C55B358113}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogServer.Infrastructure", "src\LogServer.Infrastructure\LogServer.Infrastructure.csproj", "{5FE511EC-40D7-4A31-9C91-729616DDD1EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogServer.Infrastructure", "src\LogServer.Infrastructure\LogServer.Infrastructure.csproj", "{5FE511EC-40D7-4A31-9C91-729616DDD1EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogServer.API", "src\LogServer.API\LogServer.API.csproj", "{2BE14640-5CD4-4F19-9148-DF1E05577034}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogServer.API", "src\LogServer.API\LogServer.API.csproj", "{2BE14640-5CD4-4F19-9148-DF1E05577034}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogServer.SPA", "src\LogServer.SPA\LogServer.SPA.csproj", "{D1942EE9-9CF9-4C95-87A0-5BAF01896137}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogServer.SPA", "src\LogServer.SPA\LogServer.SPA.csproj", "{D1942EE9-9CF9-4C95-87A0-5BAF01896137}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{32321D8D-1B01-40B5-B8D1-7DAEC950DE3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "test\IntegrationTests\IntegrationTests.csproj", "{1632043A-D7A5-493E-ADB3-BBCF07A63F38}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "test\IntegrationTests\IntegrationTests.csproj", "{1632043A-D7A5-493E-ADB3-BBCF07A63F38}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,9 +25,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{C1EEEF9B-5A3A-45E6-8C3A-31C55B358113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -92,18 +87,9 @@ Global
 		{1632043A-D7A5-493E-ADB3-BBCF07A63F38}.Release|x64.Build.0 = Release|Any CPU
 		{1632043A-D7A5-493E-ADB3-BBCF07A63F38}.Release|x86.ActiveCfg = Release|Any CPU
 		{1632043A-D7A5-493E-ADB3-BBCF07A63F38}.Release|x86.Build.0 = Release|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Debug|x64.Build.0 = Debug|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Debug|x86.Build.0 = Debug|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Release|x64.ActiveCfg = Release|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Release|x64.Build.0 = Release|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Release|x86.ActiveCfg = Release|Any CPU
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C1EEEF9B-5A3A-45E6-8C3A-31C55B358113} = {C92239B9-5E04-4CD9-B02D-F70EB42949F0}
@@ -111,6 +97,8 @@ Global
 		{2BE14640-5CD4-4F19-9148-DF1E05577034} = {C92239B9-5E04-4CD9-B02D-F70EB42949F0}
 		{D1942EE9-9CF9-4C95-87A0-5BAF01896137} = {C92239B9-5E04-4CD9-B02D-F70EB42949F0}
 		{1632043A-D7A5-493E-ADB3-BBCF07A63F38} = {32321D8D-1B01-40B5-B8D1-7DAEC950DE3A}
-		{BA6F63A4-AC7C-41EE-BD96-8557F11D206F} = {32321D8D-1B01-40B5-B8D1-7DAEC950DE3A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6423EFF9-11DA-488C-8536-3E68C5AEF6F1}
 	EndGlobalSection
 EndGlobal

@@ -5,15 +5,11 @@ import { RouterModule } from '@angular/router';
 import { HubClient } from './hub-client';
 import { SharedModule } from '../shared/shared.module';
 
-const declarations = [
-];
-
 const providers = [
   HubClient
 ];
 
 @NgModule({
-  declarations,
   imports: [
     CommonModule,
     FormsModule,

@@ -6,8 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using LogServer.API;
-using LogServer.Infrastructure.Data;
+using LogServer.Infrastructure;
 using MediatR;
+using LogServer.Infrastructure;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace IntegrationTests
 {
@@ -19,10 +22,10 @@ namespace IntegrationTests
         {
             using (var server = CreateServer())
             {
-                IAppDbContext context = server.Host.Services.GetService(typeof(IAppDbContext)) as IAppDbContext;
                 IMediator mediator = server.Host.Services.GetService(typeof(IMediator)) as IMediator;
+                IBackgroundTaskQueue queue = server.Host.Services.GetService(typeof(IBackgroundTaskQueue)) as IBackgroundTaskQueue;
 
-                var eventStore = new EventStore(context, mediator);
+                var eventStore = new EventStore(mediator,queue);
                 var id = Guid.NewGuid();
 
                 var response = await server.CreateClient()
@@ -30,12 +33,57 @@ namespace IntegrationTests
                     {
                         ClientId = id,
                         LogLevel = "Trace",
-                        Message = "Test"
+                        Message = "Q"
                     });
 
                 var aggregate = eventStore.Query<Log>(response.LogId);
 
-                Assert.Equal("Test", aggregate.Message);
+                Assert.Equal("Q", aggregate.Message);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldSaveMultiple()
+        {
+            using (var server = CreateServer())
+            {
+                IMediator mediator = server.Host.Services.GetService(typeof(IMediator)) as IMediator;
+                IBackgroundTaskQueue queue = server.Host.Services.GetService(typeof(IBackgroundTaskQueue)) as IBackgroundTaskQueue;
+
+                var eventStore = new EventStore(mediator, queue);
+                var id = Guid.NewGuid();
+                var client = server.CreateClient();
+
+                var taskList = new List<Task>
+                {
+                    client
+                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    {
+                        ClientId = id,
+                        LogLevel = "Trace",
+                        Message = "1"
+                    }),
+
+                    client
+                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    {
+                        ClientId = id,
+                        LogLevel = "Trace",
+                        Message = "2"
+                    }),
+
+                    client
+                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    {
+                        ClientId = id,
+                        LogLevel = "Trace",
+                        Message = "3"
+                    })
+                };
+
+                await Task.WhenAll(taskList);
+                
+                Assert.Equal(1, 1);
             }
         }
 
@@ -44,6 +92,14 @@ namespace IntegrationTests
         {
             using (var server = CreateServer())
             {
+                _ = await server.CreateClient()
+                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    {
+                        ClientId = Guid.NewGuid(),
+                        LogLevel = "Trace",
+                        Message = "Test"
+                    });
+
                 var response = await server.CreateClient()
                     .GetAsync<GetLogsQuery.Response>(Get.Logs);
 
@@ -56,10 +112,18 @@ namespace IntegrationTests
         {
             using (var server = CreateServer())
             {
-                var response = await server.CreateClient()
-                    .GetAsync<GetLogsQuery.Response>(Get.Logs);
+                var  response1 = await server.CreateClient()
+                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    {
+                        ClientId = Guid.NewGuid(),
+                        LogLevel = "Trace",
+                        Message = "Test"
+                    });
 
-                Assert.True(response.Logs.Count() > 0);
+                var response2 = await server.CreateClient()
+                    .GetAsync<GetLogByIdQuery.Response>(Get.LogById(response1.LogId));
+
+                Assert.Equal(response2.Log.LogId,response1.LogId);
             }
         }
     }

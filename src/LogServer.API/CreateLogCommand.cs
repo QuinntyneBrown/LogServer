@@ -1,12 +1,9 @@
-using MediatR;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Collections.Generic;
 using LogServer.Core.Interfaces;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using System;
 using LogServer.Core.Models;
+using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LogServer.API
 {
@@ -33,9 +30,7 @@ namespace LogServer.API
 
                 _eventStore.Save(log);
 
-                return new Response() {
-                    LogId = log.LogId
-                };
+                return new Response() { LogId = log.LogId };
             }
         }
     }
