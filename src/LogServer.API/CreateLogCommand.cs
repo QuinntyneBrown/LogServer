@@ -18,9 +18,8 @@ namespace LogServer.API
             public Guid ClientId { get; set; }
         }
 
-        public class Response
-        {
-
+        public class Response {
+            public Guid LogId { get; set; }
         }
 
         public class Handler : IRequestHandler<Request, Response>
@@ -30,10 +29,13 @@ namespace LogServer.API
             public Handler(IEventStore eventStore) => _eventStore = eventStore;
 
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken) {
+                var log = new Log(request.LogLevel, request.Message, request.ClientId);
 
-                _eventStore.Save(new Log(request.LogLevel,request.Message,request.ClientId));
+                _eventStore.Save(log);
 
-                return new Response() { };
+                return new Response() {
+                    LogId = log.LogId
+                };
             }
         }
     }

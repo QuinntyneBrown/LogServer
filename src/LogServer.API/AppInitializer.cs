@@ -9,9 +9,7 @@ namespace LogServer.API
     public class AppInitializer: IDesignTimeDbContextFactory<AppDbContext>
     {
         public static void Seed(AppDbContext context)
-        {
-            context.SaveChanges();
-        }
+            => context.SaveChanges();
 
         public AppDbContext CreateDbContext(string[] args)
         {

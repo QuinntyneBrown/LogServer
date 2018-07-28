@@ -10,10 +10,7 @@ namespace LogServer.API
 {
     public class GetLogsQuery
     {
-        public class Request : IRequest<Response>
-        {
-
-        }
+        public class Request : IRequest<Response> { }
 
         public class Response
         {
@@ -22,16 +19,14 @@ namespace LogServer.API
 
         public class Handler : IRequestHandler<Request, Response>
         {
-
             private readonly IEventStore _eventStore;
 
             public Handler(IEventStore eventStore) => _eventStore = eventStore;
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
-            {
-                return new Response() {
+                => new Response()
+                {
                     Logs = _eventStore.Query<Log>().Select(x => LogDto.FromLog(x)).ToList()
                 };
-            }
         }
     }
 }

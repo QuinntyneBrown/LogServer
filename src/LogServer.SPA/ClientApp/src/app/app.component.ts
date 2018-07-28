@@ -4,6 +4,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { LogService } from './logs/log.service';
 import { map } from 'rxjs/operators';
 import { merge } from 'rxjs';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',

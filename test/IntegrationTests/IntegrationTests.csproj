@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
@@ -20,6 +21,12 @@
     <ProjectReference Include="..\..\src\LogServer.Core\LogServer.Core.csproj" />
     <ProjectReference Include="..\..\src\LogServer.Infrastructure\LogServer.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\LogServer.API\LogServer.API.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="storedEvents.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
