@@ -47,9 +47,16 @@
             height="100%"
             width="100%"
             [paging]="true"
-            [perPage]="10">
-    <igx-column [field]="'clientId'" [header]="'ClientId'" width="100px" [resizable]="true" filterable="true"></igx-column>
-    <igx-column [field]="'logLevel'" [header]="'Log Level'" width="150px" [resizable]="true" filterable="true"></igx-column>
-    <igx-column [field]="'message'" [header]="'Message'" filterable="true"></igx-column>
+            [perPage]="10"
+            columnWidth="200px"
+            [showToolbar]="true"
+            [columnHiding]="true"
+            toolbarTitle="Logs"
+            columnHidingTitle="Column Hiding"
+            hiddenColumnsText="Hidden">
+    <igx-column [field]="'clientId'" [header]="'ClientId'" [resizable]="true" filterable="true"></igx-column>
+    <igx-column [field]="'logLevel'" [header]="'Log Level'" [resizable]="true" filterable="true"></igx-column>
+    <igx-column [field]="'message'" [header]="'Message'" [resizable]="true" filterable="true"></igx-column>
+    <igx-column [field]="'createdOn'" [header]="'Created On'" [resizable]="true" filterable="true"></igx-column>
   </igx-grid>
 </section>

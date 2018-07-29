@@ -22,7 +22,7 @@ namespace LogServer.Infrastructure
 
     public class DeserializedStoredEvent {
         public DeserializedStoredEvent(StoredEvent @event)
-        {
+        {            
             StoredEventId = @event.StoredEventId;
             StreamId = @event.StreamId;
             Type = @event.Type;
@@ -48,7 +48,9 @@ namespace LogServer.Infrastructure
         private readonly IMediator _mediator;
         private readonly IBackgroundTaskQueue _queue;
 
-        public EventStore(IMediator mediator = default(IMediator), IBackgroundTaskQueue queue = default(IBackgroundTaskQueue)) {
+        public EventStore(
+            IMediator mediator = default(IMediator), 
+            IBackgroundTaskQueue queue = default(IBackgroundTaskQueue)) {
             _mediator = mediator;
             _queue = queue;
         }
@@ -61,6 +63,8 @@ namespace LogServer.Infrastructure
 
             foreach (var @event in aggregateRoot.DomainEvents)
             {
+                @event.CreatedOn = DateTime.UtcNow;
+
                 Add(new StoredEvent()
                 {
                     StoredEventId = Guid.NewGuid(),
@@ -85,7 +89,7 @@ namespace LogServer.Infrastructure
 
             foreach (var storedEvent in Get().Where(x => x.StreamId == id))
                 list.Add(storedEvent.Data as DomainEvent);
-            
+
             return Load<T>(list.ToArray());
         }
 
@@ -125,7 +129,7 @@ namespace LogServer.Infrastructure
                 .Where(x => x.Aggregate == typeof(TAggregateRoot).Name).GroupBy(x => x.StreamId))
             {                
                 var events = grouping.Select(x => x.Data as DomainEvent).ToArray();
-
+                
                 aggregates.Add(Load<TAggregateRoot>(events.ToArray()));
             }
             

@@ -13,7 +13,7 @@ namespace LogServer.Core.Models
         public string LogLevel { get; set; }
         public string Message { get; set; }
         public Guid ClientId { get; set; }
-
+        public DateTime CreatedOn { get; set; }
         protected override void EnsureValidState()
         {
             if (string.IsNullOrEmpty(Message))
@@ -32,6 +32,7 @@ namespace LogServer.Core.Models
                     LogLevel = logCreated.LogLevel;
                     Message = logCreated.Message;
                     ClientId = logCreated.ClientId;
+                    CreatedOn = logCreated.CreatedOn;
                     break;
             }
         }

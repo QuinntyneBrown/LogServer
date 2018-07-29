@@ -9,14 +9,15 @@ namespace LogServer.API
         public string LogLevel { get; set; }
         public string Message { get; set; }
         public Guid ClientId { get; set; }
-
+        public string CreatedOn { get; set; }
         public static LogDto FromLog(Log log)
             => new LogDto
             {
                 LogId = log.LogId,
                 LogLevel = log.LogLevel,
                 Message = log.Message,
-                ClientId = log.ClientId
+                ClientId = log.ClientId,
+                CreatedOn = $"{log.CreatedOn.ToShortDateString()} {log.CreatedOn.ToLongTimeString()}"
             };
     }
 }
