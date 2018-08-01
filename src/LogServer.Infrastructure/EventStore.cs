@@ -10,14 +10,42 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using static LogServer.Infrastructure.DeserializedEventStore;
 using static Newtonsoft.Json.JsonConvert;
 
 
 namespace LogServer.Infrastructure
 {
-    public static class DeserializedEventStore {
-        public static ConcurrentDictionary<Guid,DeserializedStoredEvent> Events { get; set; }
+    public static class DeserializedEventStore
+    {
+        public static Dictionary<Guid, DeserializedStoredEvent> Events { get; set; }
+        private static readonly object syncLock = new object();
+
+        public static void TryAdd(StoredEvent @event)
+        {
+            lock (syncLock)
+            {
+                if (Events == null)
+                    Events = new Dictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
+
+                Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
+            }
+        }
+
+        public static List<DeserializedStoredEvent> GetDeserializedStoredEvents() {
+            lock (syncLock)
+            {
+                if (Events == null)
+                    Events = new Dictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
+
+                return Events.Select(x => x.Value)
+                    .OrderBy(x => x.CreatedOn)
+                    .ToList();
+            }
+        }
+
+        public static ICollection<StoredEvent> GetStoredEvents()
+            => DeserializeObject<ICollection<StoredEvent>>(string.Join(" ", File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));
+
     }
 
     public class DeserializedStoredEvent {
@@ -137,29 +165,18 @@ namespace LogServer.Infrastructure
         }  
         
         protected List<DeserializedStoredEvent> Get() {
-            if (Events == null)
-                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
-
-            return Events.Select(x => x.Value)
-                .OrderBy(x => x.CreatedOn)
-                .ToList();
+            return DeserializedEventStore.GetDeserializedStoredEvents();
         }
 
         protected void Add(StoredEvent @event) {
-            if (Events == null)
-                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
-
-            Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
+            DeserializedEventStore.TryAdd(@event);
             Persist(@event);
         }
-
-        public ICollection<StoredEvent> GetStoredEvents() 
-            => DeserializeObject<ICollection<StoredEvent>>(string.Join(" ", File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));
-
+        
         public void Persist(StoredEvent @event)
             => _queue.QueueBackgroundWorkItem(async token =>
             {
-                var storedEvents = GetStoredEvents();
+                var storedEvents = DeserializedEventStore.GetStoredEvents();
                 storedEvents.Add(@event);
                 File.WriteAllLines($@"{Environment.CurrentDirectory}\storedEvents.json", new string[1] { SerializeObject(storedEvents) });
                 await Task.CompletedTask;

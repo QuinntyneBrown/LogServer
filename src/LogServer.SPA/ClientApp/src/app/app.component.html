@@ -57,6 +57,6 @@
     <igx-column [field]="'clientId'" [header]="'ClientId'" [resizable]="true" filterable="true"></igx-column>
     <igx-column [field]="'logLevel'" [header]="'Log Level'" [resizable]="true" filterable="true"></igx-column>
     <igx-column [field]="'message'" [header]="'Message'" [resizable]="true" filterable="true"></igx-column>
-    <igx-column [field]="'createdOn'" [header]="'Created On'" [resizable]="true" filterable="true"></igx-column>
+    <igx-column [field]="'createdOn'" [header]="'Created On'" [resizable]="true" filterable="true" [dataType]="'date'" [formatter]="formatDate"></igx-column>
   </igx-grid>
 </section>

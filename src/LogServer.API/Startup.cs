@@ -20,25 +20,24 @@ namespace LogServer.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IEventStore, EventStore>();
-            services.AddHttpContextAccessor();
-            services.AddHostedService<QueuedHostedService>();
-            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-
-            services.AddCustomMvc()
-                .AddFluentValidation(cfg => { cfg.RegisterValidatorsFromAssemblyContaining<Startup>(); });
-
             services
                 .AddCustomSecurity(Configuration)
                 .AddCustomSignalR()
                 .AddCustomSwagger()
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>))
-                .AddMediatR(typeof(Startup).Assembly);
+                .AddTransient<IEventStore, EventStore>()
+                .AddHttpContextAccessor()
+                .AddHostedService<QueuedHostedService>()
+                .AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>()
+                .AddCustomMvc()
+                .AddFluentValidation(cfg => cfg.RegisterValidatorsFromAssemblyContaining<Startup>());
+
+            services.AddMediatR(typeof(Startup).Assembly);
+
         }
 
         public void Configure(IApplicationBuilder app)
-        {        
-            app.UseCors(CorsDefaults.Policy)            
+            => app.UseCors(CorsDefaults.Policy)
                 .UseMvc()
                 .UseSignalR(routes => routes.MapHub<IntegrationEventsHub>("/hub"))
                 .UseSwagger()
@@ -47,8 +46,5 @@ namespace LogServer.API
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "LogServer API");
                     options.RoutePrefix = string.Empty;
                 });
-        }        
     }
-
-
 }
