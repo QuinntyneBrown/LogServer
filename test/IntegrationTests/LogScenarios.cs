@@ -11,6 +11,7 @@ using MediatR;
 using LogServer.Infrastructure;
 using System.Collections.Generic;
 using System.Threading;
+using System.Diagnostics;
 
 namespace IntegrationTests
 {
@@ -42,6 +43,43 @@ namespace IntegrationTests
             }
         }
 
+        [Fact]
+        public async Task Perf()
+        {
+            using (var server = CreateServer())
+            {
+                IMediator mediator = server.Host.Services.GetService(typeof(IMediator)) as IMediator;
+                IBackgroundTaskQueue queue = server.Host.Services.GetService(typeof(IBackgroundTaskQueue)) as IBackgroundTaskQueue;
+
+                var eventStore = new EventStore(mediator, queue);
+                var id = Guid.NewGuid();
+                var client = server.CreateClient();
+                var stopWatch = new Stopwatch();
+
+                stopWatch.Start();
+
+                var taskList = new List<Task>();
+
+                for(var i = 0; i < 1000; i++)
+                {
+                    taskList.Add(client
+                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    {
+                        ClientId = id,
+                        LogLevel = "Trace",
+                        Message = $"{i}"
+                    }));
+                }
+
+                await Task.WhenAll(taskList);
+
+                stopWatch.Stop();
+
+                var duration = stopWatch.ElapsedMilliseconds;
+
+                Assert.Equal(1, 1);
+            }
+        }
         [Fact]
         public async Task ShouldSaveMultiple()
         {

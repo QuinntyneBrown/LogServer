@@ -1,18 +1,17 @@
 import { Injectable, NgZone } from "@angular/core";
-import { HubConnection, HubConnectionBuilder } from "@aspnet/signalr";
+import { HubConnection, HubConnectionBuilder, IHttpConnectionOptions } from "@aspnet/signalr";
 import { Subject } from "rxjs";
 
 @Injectable()
 export class HubClient {
-  public events: Subject<any> = new Subject();
-
+  private _connection: HubConnection;
+  private _connect: Promise<any>;
+  
   constructor(
     private _ngZone: NgZone) {
   }
 
-  private _connection: HubConnection;
-
-  private _connect: Promise<any>;
+  public events: Subject<any> = new Subject();
 
   public connect(): Promise<any> {
 
@@ -22,12 +21,13 @@ export class HubClient {
     this._connect = new Promise((resolve) => {
       
       this._connection = this._connection || new HubConnectionBuilder()
-        .withUrl(`http://localhost:45121/hub`)
+          .withUrl(`http://localhost:45121/hub`, {
+            logMessageContent: true,
+          })
         .build();
 
-      this._connection.on("message", (value) => {
-        this._ngZone.run(() => this.events.next(value));
-      });
+      this._connection.on("message",
+        (value) => this._ngZone.run(() => this.events.next(value)));
 
       this._connection.start().then(() => resolve());
     });
