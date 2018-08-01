@@ -1,17 +1,14 @@
-using LogServer.Core.Models;
+using LogServer.API;
 using LogServer.Core.Extensions;
-using LogServer.Core.Interfaces;
+using LogServer.Core.Models;
+using LogServer.Infrastructure;
+using MediatR;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using LogServer.API;
-using LogServer.Infrastructure;
-using MediatR;
-using LogServer.Infrastructure;
-using System.Collections.Generic;
-using System.Threading;
-using System.Diagnostics;
 
 namespace IntegrationTests
 {
@@ -47,15 +44,10 @@ namespace IntegrationTests
         public async Task Perf()
         {
             using (var server = CreateServer())
-            {
-                IMediator mediator = server.Host.Services.GetService(typeof(IMediator)) as IMediator;
-                IBackgroundTaskQueue queue = server.Host.Services.GetService(typeof(IBackgroundTaskQueue)) as IBackgroundTaskQueue;
-
-                var eventStore = new EventStore(mediator, queue);
-                var id = Guid.NewGuid();
+            {                
                 var client = server.CreateClient();
                 var stopWatch = new Stopwatch();
-
+                var clientId = Guid.NewGuid();
                 stopWatch.Start();
 
                 var taskList = new List<Task>();
@@ -65,7 +57,7 @@ namespace IntegrationTests
                     taskList.Add(client
                     .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
                     {
-                        ClientId = id,
+                        ClientId = clientId,
                         LogLevel = "Trace",
                         Message = $"{i}"
                     }));
@@ -75,9 +67,7 @@ namespace IntegrationTests
 
                 stopWatch.Stop();
 
-                var duration = stopWatch.ElapsedMilliseconds;
-
-                Assert.Equal(1, 1);
+                var duration = stopWatch.ElapsedMilliseconds;                
             }
         }
         [Fact]

@@ -17,30 +17,25 @@ namespace LogServer.Infrastructure
 {
     public static class DeserializedEventStore
     {
-        public static Dictionary<Guid, DeserializedStoredEvent> Events { get; set; }
+        public static ConcurrentDictionary<Guid, DeserializedStoredEvent> Events { get; set; }
         private static readonly object syncLock = new object();
 
         public static void TryAdd(StoredEvent @event)
         {
-            lock (syncLock)
-            {
-                if (Events == null)
-                    Events = new Dictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
+            if (Events == null)
+                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
 
-                Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
-            }
+            Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
         }
 
         public static List<DeserializedStoredEvent> GetDeserializedStoredEvents() {
-            lock (syncLock)
-            {
-                if (Events == null)
-                    Events = new Dictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
 
-                return Events.Select(x => x.Value)
-                    .OrderBy(x => x.CreatedOn)
-                    .ToList();
-            }
+            if (Events == null)
+                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
+
+            return Events.Select(x => x.Value)
+                .OrderBy(x => x.CreatedOn)
+                .ToList();
         }
 
         public static ICollection<StoredEvent> GetStoredEvents()
