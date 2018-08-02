@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading;
 
 namespace LogServer.SPA
 {
@@ -32,6 +34,9 @@ namespace LogServer.SPA
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            //Console.WriteLine($">>>>>>>>>>>> {Environment.ProcessorCount}");
+            //ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

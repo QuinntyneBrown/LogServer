@@ -2,6 +2,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace LogServer.API
 {
@@ -9,7 +10,9 @@ namespace LogServer.API
     {
         public static void Main(string[] args)
         {
-            var host = CreateWebHostBuilder().Build();
+            var host = CreateWebHostBuilder()
+                .ConfigureLogging(logging => logging.ClearProviders())
+                .Build();
 
             ProcessDbCommands(args, host);
 

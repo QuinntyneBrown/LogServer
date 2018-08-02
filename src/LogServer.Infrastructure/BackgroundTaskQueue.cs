@@ -23,9 +23,7 @@ namespace LogServer.Infrastructure
             Func<CancellationToken, Task> workItem)
         {
             if (workItem == null)
-            {
                 throw new ArgumentNullException(nameof(workItem));
-            }
 
             _workItems.Enqueue(workItem);
             _signal.Release();

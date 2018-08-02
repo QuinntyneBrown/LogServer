@@ -70,6 +70,7 @@ namespace IntegrationTests
                 var duration = stopWatch.ElapsedMilliseconds;                
             }
         }
+
         [Fact]
         public async Task ShouldSaveMultiple()
         {

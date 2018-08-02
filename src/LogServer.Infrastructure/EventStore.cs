@@ -173,7 +173,8 @@ namespace LogServer.Infrastructure
             {
                 var storedEvents = DeserializedEventStore.GetStoredEvents();
                 storedEvents.Add(@event);
-                File.WriteAllLines($@"{Environment.CurrentDirectory}\storedEvents.json", new string[1] { SerializeObject(storedEvents) });
+                File.WriteAllLines($@"{Environment.CurrentDirectory}\storedEvents.json", 
+                    new string[1] { SerializeObject(storedEvents) });
                 await Task.CompletedTask;
             });
     }

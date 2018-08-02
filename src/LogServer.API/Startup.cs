@@ -3,6 +3,7 @@ using LogServer.Core;
 using LogServer.Core.Behaviours;
 using LogServer.Core.Extensions;
 using LogServer.Core.Interfaces;
+using LogServer.Core.Middleware;
 using LogServer.Infrastructure;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -38,6 +39,7 @@ namespace LogServer.API
 
         public void Configure(IApplicationBuilder app)
             => app.UseCors(CorsDefaults.Policy)
+                .UseMiddleware<RequestLoggerMiddleware>()
                 .UseMvc()
                 .UseSignalR(routes => routes.MapHub<IntegrationEventsHub>("/hub"))
                 .UseSwagger()
