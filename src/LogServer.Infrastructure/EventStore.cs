@@ -52,7 +52,7 @@ namespace LogServer.Infrastructure
         }
 
         public static IEnumerable<StoredEvent> GetStoredEvents()
-            => DeserializeObject<ICollection<StoredEvent>>(File.ReadAllText($@"{Environment.CurrentDirectory}\storedEvents.json"));
+            => DeserializeObject<ICollection<StoredEvent>>(string.Join(" ",File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));
 
     }
 

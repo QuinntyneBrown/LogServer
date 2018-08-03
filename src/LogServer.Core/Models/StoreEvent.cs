@@ -6,6 +6,10 @@ namespace LogServer.Core.Models
 {
     public class StoredEvent
     {
+        public StoredEvent()
+        {
+
+        }
         public StoredEvent(AggregateRoot aggregateRoot, object @event,Type type)
         {
             StoredEventId = Guid.NewGuid();
