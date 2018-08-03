@@ -1,5 +1,6 @@
 using LogServer.Core.Common;
 using System;
+using System.Collections.Generic;
 
 namespace LogServer.Core.Interfaces
 {
@@ -10,7 +11,7 @@ namespace LogServer.Core.Interfaces
             where TAggregateRoot : AggregateRoot;
         TAggregateRoot Query<TAggregateRoot>(Guid id)
             where TAggregateRoot : AggregateRoot;
-        TAggregateRoot[] Query<TAggregateRoot>()
+        IEnumerable<TAggregateRoot> Query<TAggregateRoot>()
             where TAggregateRoot : AggregateRoot;
     }
 }

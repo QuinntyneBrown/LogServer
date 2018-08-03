@@ -11,39 +11,52 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using static Newtonsoft.Json.JsonConvert;
-
+using static LogServer.Infrastructure.DeserializedEventStore;
 
 namespace LogServer.Infrastructure
 {
-    public static class DeserializedEventStore
+    internal static class DeserializedEventStore
     {
-        public static ConcurrentDictionary<Guid, DeserializedStoredEvent> Events { get; set; }
+        private static ConcurrentDictionary<Guid, DeserializedStoredEvent> _events { get; set; }
+        public static ConcurrentDictionary<Guid, DeserializedStoredEvent> Events
+        {
+            get {
+                if(_events == null)
+                {
+                    var dictionary = new Dictionary<Guid, DeserializedStoredEvent>();
+
+                    foreach (var storedEvent in GetStoredEvents())
+                        dictionary.Add(storedEvent.StreamId, new DeserializedStoredEvent(storedEvent));
+
+                    _events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(dictionary);
+                }
+                
+                return _events;
+            }
+        }
+
         private static readonly object syncLock = new object();
 
         public static void TryAdd(StoredEvent @event)
+            => Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
+
+        public static IEnumerable<DeserializedStoredEvent> Get()
         {
-            if (Events == null)
-                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
+            var eventsCount = Events.Count();
+            var deserializedStoredEvents = new DeserializedStoredEvent[eventsCount];
+            for (var i = 0; i < eventsCount; i++)
+                deserializedStoredEvents[i] = Events.ElementAt(i).Value;
 
-            Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
+            Array.Sort(deserializedStoredEvents, (x, y) => DateTime.Compare(x.CreatedOn, y.CreatedOn));
+            return deserializedStoredEvents;
         }
 
-        public static List<DeserializedStoredEvent> GetDeserializedStoredEvents() {
-
-            if (Events == null)
-                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
-
-            return Events.Select(x => x.Value)
-                .OrderBy(x => x.CreatedOn)
-                .ToList();
-        }
-
-        public static ICollection<StoredEvent> GetStoredEvents()
-            => DeserializeObject<ICollection<StoredEvent>>(string.Join(" ", File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));
+        public static IEnumerable<StoredEvent> GetStoredEvents()
+            => DeserializeObject<ICollection<StoredEvent>>(File.ReadAllText($@"{Environment.CurrentDirectory}\storedEvents.json"));
 
     }
 
-    public class DeserializedStoredEvent {
+    internal class DeserializedStoredEvent {
         public DeserializedStoredEvent(StoredEvent @event)
         {            
             StoredEventId = @event.StoredEventId;
@@ -79,7 +92,7 @@ namespace LogServer.Infrastructure
         }
 
         public void Dispose() { }
-
+        
         public void Save(AggregateRoot aggregateRoot)
         {
             var type = aggregateRoot.GetType();
@@ -88,16 +101,7 @@ namespace LogServer.Infrastructure
             {
                 @event.CreatedOn = DateTime.UtcNow;
 
-                Add(new StoredEvent()
-                {
-                    StoredEventId = Guid.NewGuid(),
-                    Aggregate = aggregateRoot.GetType().Name,
-                    Data = SerializeObject(@event),
-                    StreamId = (Guid)type.GetProperty($"{type.Name}Id").GetValue(aggregateRoot, null),
-                    DotNetType = @event.GetType().AssemblyQualifiedName,
-                    Type = @event.GetType().Name,
-                    CreatedOn = DateTime.UtcNow
-                });
+                Add(new StoredEvent(aggregateRoot,@event,type));
                 
                 if (_mediator != null) _mediator.Publish(@event).GetAwaiter().GetResult();
             }
@@ -110,13 +114,15 @@ namespace LogServer.Infrastructure
         {
             var list = new List<DomainEvent>();
 
-            foreach (var storedEvent in Get().Where(x => x.StreamId == id))
-                list.Add(storedEvent.Data as DomainEvent);
-
-            return Load<T>(list.ToArray());
+            foreach (var storedEvent in Get()) {
+                if(storedEvent.StreamId == id)
+                    list.Add(storedEvent.Data as DomainEvent);
+            }
+            
+            return Load<T>(list);
         }
-
-        private T Load<T>(DomainEvent[] events)
+        
+        private T Load<T>(IEnumerable<DomainEvent> events)
             where T : AggregateRoot
         {
             var aggregate = (T)FormatterServices.GetUninitializedObject(typeof(T));
@@ -131,50 +137,46 @@ namespace LogServer.Infrastructure
         public TAggregateRoot Query<TAggregateRoot>(string propertyName, string value)
             where TAggregateRoot : AggregateRoot
         {
+            var type = typeof(TAggregateRoot);
+            var prop = type.GetProperty(propertyName);
+
             var storedEvents = Get()
-                .Where(x => {
-                    var prop = Type.GetType(x.DotNetType).GetProperty(propertyName);
-                    return prop != null && $"{prop.GetValue(x.Data, null)}" == value;
-                })
-                .ToArray();
+                .Where(x => prop != null && $"{prop.GetValue(x.Data, null)}" == value);
 
-            if (storedEvents.Length < 1) return null;
+            if (storedEvents.Count() < 1) return null;
 
-            return Query<TAggregateRoot>(storedEvents.First().StreamId) as TAggregateRoot;
+            return Query<TAggregateRoot>(storedEvents.ElementAt(0).StreamId) as TAggregateRoot;
         }
 
-        public TAggregateRoot[] Query<TAggregateRoot>()
+
+        public IEnumerable<TAggregateRoot> Query<TAggregateRoot>()
             where TAggregateRoot : AggregateRoot
         {
-            var aggregates = new List<TAggregateRoot>();
-            
-            foreach (var grouping in Get()
-                .Where(x => x.Aggregate == typeof(TAggregateRoot).Name).GroupBy(x => x.StreamId))
-            {                
-                var events = grouping.Select(x => x.Data as DomainEvent).ToArray();
-                
-                aggregates.Add(Load<TAggregateRoot>(events.ToArray()));
-            }
-            
-            return aggregates.ToArray();
-        }  
-        
-        protected List<DeserializedStoredEvent> Get() {
-            return DeserializedEventStore.GetDeserializedStoredEvents();
-        }
+            var aggregates = new List<TAggregateRoot>();            
+            var streamIds = new List<Guid>();
 
-        protected void Add(StoredEvent @event) {
-            DeserializedEventStore.TryAdd(@event);
+            foreach(var @event in Get())
+                if (!streamIds.Contains(@event.StreamId))
+                    streamIds.Add(@event.StreamId);
+
+            foreach(var streamId in streamIds)
+                aggregates.Add(Query<TAggregateRoot>(streamId));
+            
+            return aggregates;
+        }
+        
+        private void Add(StoredEvent @event) {
+            TryAdd(@event);
             Persist(@event);
         }
         
-        public void Persist(StoredEvent @event)
+        private void Persist(StoredEvent @event)
             => _queue.QueueBackgroundWorkItem(async token =>
             {
-                var storedEvents = DeserializedEventStore.GetStoredEvents();
-                storedEvents.Add(@event);
-                File.WriteAllLines($@"{Environment.CurrentDirectory}\storedEvents.json", 
-                    new string[1] { SerializeObject(storedEvents) });
+                var payload = SerializeObject(DeserializedEventStore
+                    .GetStoredEvents().Concat(new StoredEvent[1] { @event }));
+
+                File.WriteAllText($@"{Environment.CurrentDirectory}\storedEvents.json", payload);
                 await Task.CompletedTask;
             });
     }
