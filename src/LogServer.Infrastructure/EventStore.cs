@@ -4,81 +4,15 @@ using LogServer.Core.Interfaces;
 using LogServer.Core.Models;
 using MediatR;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using static Newtonsoft.Json.JsonConvert;
-using static LogServer.Infrastructure.DeserializedEventStore;
 
 namespace LogServer.Infrastructure
 {
-    internal static class DeserializedEventStore
-    {
-        private static ConcurrentDictionary<Guid, DeserializedStoredEvent> _events { get; set; }
-        public static ConcurrentDictionary<Guid, DeserializedStoredEvent> Events
-        {
-            get {
-                if(_events == null)
-                {
-                    var dictionary = new Dictionary<Guid, DeserializedStoredEvent>();
-
-                    foreach (var storedEvent in GetStoredEvents())
-                        dictionary.Add(storedEvent.StreamId, new DeserializedStoredEvent(storedEvent));
-
-                    _events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(dictionary);
-                }
-                
-                return _events;
-            }
-        }
-
-        private static readonly object syncLock = new object();
-
-        public static void TryAdd(StoredEvent @event)
-            => Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
-
-        public static IEnumerable<DeserializedStoredEvent> Get()
-        {
-            var eventsCount = Events.Count();
-            var deserializedStoredEvents = new DeserializedStoredEvent[eventsCount];
-            for (var i = 0; i < eventsCount; i++)
-                deserializedStoredEvents[i] = Events.ElementAt(i).Value;
-
-            Array.Sort(deserializedStoredEvents, (x, y) => DateTime.Compare(x.CreatedOn, y.CreatedOn));
-            return deserializedStoredEvents;
-        }
-
-        public static IEnumerable<StoredEvent> GetStoredEvents()
-            => DeserializeObject<ICollection<StoredEvent>>(string.Join(" ",File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));
-
-    }
-
-    internal class DeserializedStoredEvent {
-        public DeserializedStoredEvent(StoredEvent @event)
-        {            
-            StoredEventId = @event.StoredEventId;
-            StreamId = @event.StreamId;
-            Type = @event.Type;
-            Aggregate = @event.Aggregate;
-            Data = DeserializeObject(@event.Data, System.Type.GetType(@event.DotNetType));
-            DotNetType = @event.DotNetType;
-            CreatedOn = @event.CreatedOn;
-            Version = @event.Version;
-        }
-
-        public Guid StoredEventId { get; set; }
-        public Guid StreamId { get; set; }
-        public string Type { get; set; }
-        public string Aggregate { get; set; }
-        public object Data { get; set; }
-        public string DotNetType { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public int Version { get; set; }
-    }
-
     public class EventStore : IEventStore
     {
         private readonly IMediator _mediator;
@@ -114,10 +48,9 @@ namespace LogServer.Infrastructure
         {
             var list = new List<DomainEvent>();
 
-            foreach (var storedEvent in Get()) {
+            foreach (var storedEvent in DeserializedEventStore.Get()) 
                 if(storedEvent.StreamId == id)
                     list.Add(storedEvent.Data as DomainEvent);
-            }
             
             return Load<T>(list);
         }
@@ -140,12 +73,13 @@ namespace LogServer.Infrastructure
             var type = typeof(TAggregateRoot);
             var prop = type.GetProperty(propertyName);
 
-            var storedEvents = Get()
-                .Where(x => prop != null && $"{prop.GetValue(x.Data, null)}" == value);
+            if (prop == null) return null;
 
-            if (storedEvents.Count() < 1) return null;
-
-            return Query<TAggregateRoot>(storedEvents.ElementAt(0).StreamId) as TAggregateRoot;
+            foreach (var deserializedStoredEvent in DeserializedEventStore.Get())
+                if ($"{prop.GetValue(deserializedStoredEvent.Data, null)}" == value)
+                    return Query<TAggregateRoot>(deserializedStoredEvent.StreamId) as TAggregateRoot;
+                        
+            return null;
         }
 
 
@@ -154,9 +88,10 @@ namespace LogServer.Infrastructure
         {
             var aggregates = new List<TAggregateRoot>();            
             var streamIds = new List<Guid>();
+            var name = typeof(TAggregateRoot).Name;
 
-            foreach(var @event in Get())
-                if (!streamIds.Contains(@event.StreamId))
+            foreach(var @event in DeserializedEventStore.Get())
+                if (@event.Aggregate == name && !streamIds.Contains(@event.StreamId))
                     streamIds.Add(@event.StreamId);
 
             foreach(var streamId in streamIds)
@@ -165,19 +100,16 @@ namespace LogServer.Infrastructure
             return aggregates;
         }
         
-        private void Add(StoredEvent @event) {
-            TryAdd(@event);
-            Persist(@event);
-        }
-        
-        private void Persist(StoredEvent @event)
+        private void Add(StoredEvent @event)
             => _queue.QueueBackgroundWorkItem(async token =>
             {
+                DeserializedEventStore.TryAdd(@event);
+
                 var payload = SerializeObject(DeserializedEventStore
                     .GetStoredEvents().Concat(new StoredEvent[1] { @event }));
 
                 File.WriteAllText($@"{Environment.CurrentDirectory}\storedEvents.json", payload);
                 await Task.CompletedTask;
-            });
+            });            
     }
 }

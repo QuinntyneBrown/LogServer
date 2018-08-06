@@ -27,7 +27,7 @@ namespace Benchmarks
 
         [Benchmark]
         public void Something() {
-            var s = _eventStore.Query<Log>();
+            _eventStore.Save(new Log("Debug", "Debug", Guid.NewGuid()));
         }
     }
 }
