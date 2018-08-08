@@ -37,7 +37,7 @@ namespace LogServer.Infrastructure
 
                 Add(new StoredEvent(aggregateRoot,@event,type));
                 
-                if (_mediator != null) _mediator.Publish(@event).GetAwaiter().GetResult();
+                _mediator?.Publish(@event).GetAwaiter().GetResult();
             }
 
             aggregateRoot.ClearEvents();
@@ -99,17 +99,19 @@ namespace LogServer.Infrastructure
             
             return aggregates;
         }
-        
-        private void Add(StoredEvent @event)
-            => _queue.QueueBackgroundWorkItem(async token =>
-            {
-                DeserializedEventStore.TryAdd(@event);
 
+        private void Add(StoredEvent @event)
+        {            
+            DeserializedEventStore.TryAdd(@event);
+
+            _queue.QueueBackgroundWorkItem(async token =>
+            {                
                 var payload = SerializeObject(DeserializedEventStore
                     .GetStoredEvents().Concat(new StoredEvent[1] { @event }));
 
                 File.WriteAllText($@"{Environment.CurrentDirectory}\storedEvents.json", payload);
                 await Task.CompletedTask;
-            });            
+            });
+        }            
     }
 }

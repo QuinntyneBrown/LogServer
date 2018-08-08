@@ -43,32 +43,32 @@ namespace IntegrationTests
         [Fact]
         public async Task Perf()
         {
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             using (var server = CreateServer())
             {                
                 var client = server.CreateClient();
                 var stopWatch = new Stopwatch();
                 var clientId = Guid.NewGuid();
                 stopWatch.Start();
-
-                var taskList = new List<Task>();
-
-                for(var i = 0; i < 1000; i++)
+                
+                for(var i = 0; i < 5; i++)
                 {
-                    taskList.Add(client
+                    await client
                     .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
                     {
                         ClientId = clientId,
                         LogLevel = "Trace",
                         Message = $"{i}"
-                    }));
+                    });
                 }
-
-                await Task.WhenAll(taskList);
-
+                
                 stopWatch.Stop();
 
                 var duration = stopWatch.ElapsedMilliseconds;                
             }
+
+            await tcs.Task;
         }
 
         [Fact]

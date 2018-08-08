@@ -29,5 +29,6 @@ namespace LogServer.Core.Models
         public string DotNetType { get; set; }
         public DateTime CreatedOn { get; set; }
         public int Version { get; set; }
+        public int Sequence { get; set; }
     }
 }

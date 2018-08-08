@@ -30,8 +30,7 @@ namespace LogServer.API
                 .AddHttpContextAccessor()
                 .AddHostedService<QueuedHostedService>()
                 .AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>()
-                .AddCustomMvc()
-                .AddFluentValidation(cfg => cfg.RegisterValidatorsFromAssemblyContaining<Startup>());
+                .AddCustomMvc<Startup>();
 
             services.AddMediatR(typeof(Startup).Assembly);
 
