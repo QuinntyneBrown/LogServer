@@ -1,3 +1,4 @@
+using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -12,10 +13,15 @@ namespace LogServer.Core.Extensions
 
     public static class ServiceCollectionExtensions
     {        
-        public static IMvcBuilder AddCustomMvc(this IServiceCollection services)
+        public static IServiceCollection AddCustomMvc<T>(this IServiceCollection services)
         {
-            return services.AddMvc()
-                .AddControllersAsServices();
+            services.AddMvcCore()
+                .AddDataAnnotations()
+                .AddJsonFormatters()
+                .AddApiExplorer()
+                .AddFluentValidation(cfg => cfg.RegisterValidatorsFromAssemblyContaining<T>());
+
+            return services;
         }
 
         public static IServiceCollection AddCustomSignalR(this IServiceCollection services)

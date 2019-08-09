@@ -4,7 +4,6 @@ using LogServer.Core.Interfaces;
 using LogServer.Core.Models;
 using MediatR;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,60 +11,8 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using static Newtonsoft.Json.JsonConvert;
 
-
 namespace LogServer.Infrastructure
 {
-    public static class DeserializedEventStore
-    {
-        public static ConcurrentDictionary<Guid, DeserializedStoredEvent> Events { get; set; }
-        private static readonly object syncLock = new object();
-
-        public static void TryAdd(StoredEvent @event)
-        {
-            if (Events == null)
-                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
-
-            Events.TryAdd(@event.StoredEventId, new DeserializedStoredEvent(@event));
-        }
-
-        public static List<DeserializedStoredEvent> GetDeserializedStoredEvents() {
-
-            if (Events == null)
-                Events = new ConcurrentDictionary<Guid, DeserializedStoredEvent>(GetStoredEvents().Select(x => new DeserializedStoredEvent(x)).ToDictionary(x => x.StoredEventId));
-
-            return Events.Select(x => x.Value)
-                .OrderBy(x => x.CreatedOn)
-                .ToList();
-        }
-
-        public static ICollection<StoredEvent> GetStoredEvents()
-            => DeserializeObject<ICollection<StoredEvent>>(string.Join(" ", File.ReadAllLines($@"{Environment.CurrentDirectory}\storedEvents.json")));
-
-    }
-
-    public class DeserializedStoredEvent {
-        public DeserializedStoredEvent(StoredEvent @event)
-        {            
-            StoredEventId = @event.StoredEventId;
-            StreamId = @event.StreamId;
-            Type = @event.Type;
-            Aggregate = @event.Aggregate;
-            Data = DeserializeObject(@event.Data, System.Type.GetType(@event.DotNetType));
-            DotNetType = @event.DotNetType;
-            CreatedOn = @event.CreatedOn;
-            Version = @event.Version;
-        }
-
-        public Guid StoredEventId { get; set; }
-        public Guid StreamId { get; set; }
-        public string Type { get; set; }
-        public string Aggregate { get; set; }
-        public object Data { get; set; }
-        public string DotNetType { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public int Version { get; set; }
-    }
-
     public class EventStore : IEventStore
     {
         private readonly IMediator _mediator;
@@ -79,7 +26,7 @@ namespace LogServer.Infrastructure
         }
 
         public void Dispose() { }
-
+        
         public void Save(AggregateRoot aggregateRoot)
         {
             var type = aggregateRoot.GetType();
@@ -88,18 +35,9 @@ namespace LogServer.Infrastructure
             {
                 @event.CreatedOn = DateTime.UtcNow;
 
-                Add(new StoredEvent()
-                {
-                    StoredEventId = Guid.NewGuid(),
-                    Aggregate = aggregateRoot.GetType().Name,
-                    Data = SerializeObject(@event),
-                    StreamId = (Guid)type.GetProperty($"{type.Name}Id").GetValue(aggregateRoot, null),
-                    DotNetType = @event.GetType().AssemblyQualifiedName,
-                    Type = @event.GetType().Name,
-                    CreatedOn = DateTime.UtcNow
-                });
+                Add(new StoredEvent(aggregateRoot,@event,type));
                 
-                if (_mediator != null) _mediator.Publish(@event).GetAwaiter().GetResult();
+                _mediator?.Publish(@event).GetAwaiter().GetResult();
             }
 
             aggregateRoot.ClearEvents();
@@ -110,13 +48,14 @@ namespace LogServer.Infrastructure
         {
             var list = new List<DomainEvent>();
 
-            foreach (var storedEvent in Get().Where(x => x.StreamId == id))
-                list.Add(storedEvent.Data as DomainEvent);
-
-            return Load<T>(list.ToArray());
+            foreach (var storedEvent in DeserializedEventStore.Get()) 
+                if(storedEvent.StreamId == id)
+                    list.Add(storedEvent.Data as DomainEvent);
+            
+            return Load<T>(list);
         }
-
-        private T Load<T>(DomainEvent[] events)
+        
+        private T Load<T>(IEnumerable<DomainEvent> events)
             where T : AggregateRoot
         {
             var aggregate = (T)FormatterServices.GetUninitializedObject(typeof(T));
@@ -131,51 +70,48 @@ namespace LogServer.Infrastructure
         public TAggregateRoot Query<TAggregateRoot>(string propertyName, string value)
             where TAggregateRoot : AggregateRoot
         {
-            var storedEvents = Get()
-                .Where(x => {
-                    var prop = Type.GetType(x.DotNetType).GetProperty(propertyName);
-                    return prop != null && $"{prop.GetValue(x.Data, null)}" == value;
-                })
-                .ToArray();
+            var type = typeof(TAggregateRoot);
+            var prop = type.GetProperty(propertyName);
 
-            if (storedEvents.Length < 1) return null;
+            if (prop == null) return null;
 
-            return Query<TAggregateRoot>(storedEvents.First().StreamId) as TAggregateRoot;
+            foreach (var deserializedStoredEvent in DeserializedEventStore.Get())
+                if ($"{prop.GetValue(deserializedStoredEvent.Data, null)}" == value)
+                    return Query<TAggregateRoot>(deserializedStoredEvent.StreamId) as TAggregateRoot;
+                        
+            return null;
         }
 
-        public TAggregateRoot[] Query<TAggregateRoot>()
+
+        public IEnumerable<TAggregateRoot> Query<TAggregateRoot>()
             where TAggregateRoot : AggregateRoot
         {
-            var aggregates = new List<TAggregateRoot>();
+            var aggregates = new List<TAggregateRoot>();            
+            var streamIds = new List<Guid>();
+            var name = typeof(TAggregateRoot).Name;
+
+            foreach(var @event in DeserializedEventStore.Get())
+                if (@event.Aggregate == name && !streamIds.Contains(@event.StreamId))
+                    streamIds.Add(@event.StreamId);
+
+            foreach(var streamId in streamIds)
+                aggregates.Add(Query<TAggregateRoot>(streamId));
             
-            foreach (var grouping in Get()
-                .Where(x => x.Aggregate == typeof(TAggregateRoot).Name).GroupBy(x => x.StreamId))
-            {                
-                var events = grouping.Select(x => x.Data as DomainEvent).ToArray();
-                
-                aggregates.Add(Load<TAggregateRoot>(events.ToArray()));
-            }
-            
-            return aggregates.ToArray();
-        }  
-        
-        protected List<DeserializedStoredEvent> Get() {
-            return DeserializedEventStore.GetDeserializedStoredEvents();
+            return aggregates;
         }
 
-        protected void Add(StoredEvent @event) {
+        private void Add(StoredEvent @event)
+        {            
             DeserializedEventStore.TryAdd(@event);
-            Persist(@event);
-        }
-        
-        public void Persist(StoredEvent @event)
-            => _queue.QueueBackgroundWorkItem(async token =>
-            {
-                var storedEvents = DeserializedEventStore.GetStoredEvents();
-                storedEvents.Add(@event);
-                File.WriteAllLines($@"{Environment.CurrentDirectory}\storedEvents.json", 
-                    new string[1] { SerializeObject(storedEvents) });
+
+            _queue.QueueBackgroundWorkItem(async token =>
+            {                
+                var payload = SerializeObject(DeserializedEventStore
+                    .GetStoredEvents().Concat(new StoredEvent[1] { @event }));
+
+                File.WriteAllText($@"{Environment.CurrentDirectory}\storedEvents.json", payload);
                 await Task.CompletedTask;
             });
+        }            
     }
 }
