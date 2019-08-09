@@ -14,16 +14,16 @@ namespace LogServer.API
         public LogsController(IMediator mediator) => _mediator = mediator;
 
         [HttpPost]
-        public async Task<ActionResult<CreateLogCommand.Response>> Create(CreateLogCommand.Request request)
+        public async Task<ActionResult<CreateLog.Response>> Create(CreateLog.Request request)
             => await _mediator.Send(request);
 
         [HttpGet("{logId}")]
-        public async Task<ActionResult<GetLogByIdQuery.Response>> GetById([FromRoute]GetLogByIdQuery.Request request)
+        public async Task<ActionResult<GetLogById.Response>> GetById([FromRoute]GetLogById.Request request)
             => await _mediator.Send(request);
 
         [HttpGet]
-        public async Task<ActionResult<GetLogsQuery.Response>> Get()
-            => await _mediator.Send(new GetLogsQuery.Request());
+        public async Task<ActionResult<GetLogs.Response>> Get()
+            => await _mediator.Send(new GetLogs.Request());
         
     }
 }

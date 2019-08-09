@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LogServer.API
 {
-    public class GetLogsQuery
+    public class GetLogs
     {
         public class Request : IRequest<Response> { }
 

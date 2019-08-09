@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LogServer.API
 {
-    public class CreateLogCommand
+    public class CreateLog
     {
         public class Request : IRequest<Response> {
             public string LogLevel { get; set; }

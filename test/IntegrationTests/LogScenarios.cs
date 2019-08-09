@@ -27,7 +27,7 @@ namespace IntegrationTests
                 var id = Guid.NewGuid();
 
                 var response = await server.CreateClient()
-                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    .PostAsAsync<CreateLog.Request, CreateLog.Response>(Post.Logs, new CreateLog.Request()
                     {
                         ClientId = id,
                         LogLevel = "Trace",
@@ -55,7 +55,7 @@ namespace IntegrationTests
                 for(var i = 0; i < 1000; i++)
                 {
                     taskList.Add(client
-                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    .PostAsAsync<CreateLog.Request, CreateLog.Response>(Post.Logs, new CreateLog.Request()
                     {
                         ClientId = clientId,
                         LogLevel = "Trace",
@@ -86,7 +86,7 @@ namespace IntegrationTests
                 var taskList = new List<Task>
                 {
                     client
-                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    .PostAsAsync<CreateLog.Request, CreateLog.Response>(Post.Logs, new CreateLog.Request()
                     {
                         ClientId = id,
                         LogLevel = "Trace",
@@ -94,7 +94,7 @@ namespace IntegrationTests
                     }),
 
                     client
-                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    .PostAsAsync<CreateLog.Request, CreateLog.Response>(Post.Logs, new CreateLog.Request()
                     {
                         ClientId = id,
                         LogLevel = "Trace",
@@ -102,7 +102,7 @@ namespace IntegrationTests
                     }),
 
                     client
-                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    .PostAsAsync<CreateLog.Request, CreateLog.Response>(Post.Logs, new CreateLog.Request()
                     {
                         ClientId = id,
                         LogLevel = "Trace",
@@ -122,7 +122,7 @@ namespace IntegrationTests
             using (var server = CreateServer())
             {
                 _ = await server.CreateClient()
-                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    .PostAsAsync<CreateLog.Request, CreateLog.Response>(Post.Logs, new CreateLog.Request()
                     {
                         ClientId = Guid.NewGuid(),
                         LogLevel = "Trace",
@@ -130,7 +130,7 @@ namespace IntegrationTests
                     });
 
                 var response = await server.CreateClient()
-                    .GetAsync<GetLogsQuery.Response>(Get.Logs);
+                    .GetAsync<GetLogs.Response>(Get.Logs);
 
                 Assert.True(response.Logs.Count() > 0);
             }
@@ -142,7 +142,7 @@ namespace IntegrationTests
             using (var server = CreateServer())
             {
                 var  response1 = await server.CreateClient()
-                    .PostAsAsync<CreateLogCommand.Request, CreateLogCommand.Response>(Post.Logs, new CreateLogCommand.Request()
+                    .PostAsAsync<CreateLog.Request, CreateLog.Response>(Post.Logs, new CreateLog.Request()
                     {
                         ClientId = Guid.NewGuid(),
                         LogLevel = "Trace",
@@ -150,7 +150,7 @@ namespace IntegrationTests
                     });
 
                 var response2 = await server.CreateClient()
-                    .GetAsync<GetLogByIdQuery.Response>(Get.LogById(response1.LogId));
+                    .GetAsync<GetLogById.Response>(Get.LogById(response1.LogId));
 
                 Assert.Equal(response2.Log.LogId,response1.LogId);
             }

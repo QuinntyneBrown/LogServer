@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LogServer.API
 {
-    public class GetLogByIdQuery
+    public class GetLogById
     {
         public class Request : IRequest<Response> {
             public Guid LogId { get; set; }
