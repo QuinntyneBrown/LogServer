@@ -1,24 +1,18 @@
 using LogServer.Core.DomainEvents;
-using System.Collections.Generic;
 
-namespace LogServer.Core.Common
+namespace LogServer.Core.Common;
+
+/// <summary>
+/// Base type for aggregate roots. Records domain events that should be
+/// published after the aggregate is persisted.
+/// </summary>
+public abstract class AggregateRoot
 {
-    public abstract class AggregateRoot
-    {
-        private List<DomainEvent> _domainEvents;
-        public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
-        public void RaiseDomainEvent(DomainEvent @event) {
-            _domainEvents = _domainEvents ?? new List<DomainEvent>();
-            _domainEvents.Add(@event);
-        }
-        public void ClearEvents() => _domainEvents.Clear();
-        public void Apply(DomainEvent @event)
-        {
-            When(@event);
-            EnsureValidState();
-            RaiseDomainEvent(@event);
-        }
-        protected abstract void When(DomainEvent @event);
-        protected abstract void EnsureValidState();
-    }
+    private readonly List<DomainEvent> _domainEvents = new();
+
+    public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
+    public void RaiseDomainEvent(DomainEvent @event) => _domainEvents.Add(@event);
+
+    public void ClearDomainEvents() => _domainEvents.Clear();
 }

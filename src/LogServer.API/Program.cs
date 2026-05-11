@@ -1,38 +1,42 @@
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-using System;
-using System.Linq;
-using Microsoft.Extensions.Logging;
+using LogServer.API.Common.ExceptionHandling;
+using LogServer.Application;
+using LogServer.Infrastructure;
 
-namespace LogServer.API
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder()
-                .ConfigureLogging(logging => logging.ClearProviders())
-                .Build();
+    options.AddDefaultPolicy(policy => policy
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .SetIsOriginAllowed(_ => true)
+        .AllowCredentials());
+});
 
-            ProcessDbCommands(args, host);
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
-            host.Run();
-        }
-        
-        public static IWebHostBuilder CreateWebHostBuilder() =>
-            WebHost.CreateDefaultBuilder()
-                .UseStartup<Startup>();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-        private static void ProcessDbCommands(string[] args, IWebHost host)
-        {
-            if (args.Contains("ci"))
-                args = new string[4] { "dropdb", "migratedb", "seeddb", "stop" };
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+builder.Services.AddProblemDetails();
 
-            if (args.Contains("seeddb"))
-                AppInitializer.Seed();
+var app = builder.Build();
 
-            if (args.Contains("stop"))
-                Environment.Exit(0);
-        }        
-    }
+app.UseExceptionHandler();
+app.UseCors();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.MapControllers();
+
+app.Run();
+
+// Expose Program for WebApplicationFactory in integration tests.
+public partial class Program;

@@ -1,19 +1,17 @@
-using System;
+namespace LogServer.Core.DomainEvents;
 
-namespace LogServer.Core.DomainEvents
+public sealed class LogCreated : DomainEvent
 {
-    public class LogCreated: DomainEvent
+    public LogCreated(Guid logId, string logLevel, string message, Guid clientId)
     {
-        public LogCreated(string logLevel,string message,Guid clientId, Guid logId)
-        {
-            LogLevel = logLevel;
-            Message = message;
-            ClientId = clientId;
-            LogId = logId;
-        }
-        public string LogLevel { get; set; }
-        public string Message { get; set; }
-        public Guid ClientId { get; set; }
-        public Guid LogId { get; set; }
+        LogId = logId;
+        LogLevel = logLevel;
+        Message = message;
+        ClientId = clientId;
     }
+
+    public Guid LogId { get; }
+    public string LogLevel { get; }
+    public string Message { get; }
+    public Guid ClientId { get; }
 }
